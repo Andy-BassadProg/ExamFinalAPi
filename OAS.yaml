@@ -1,0 +1,186 @@
+openapi: 3.0.3
+info:
+  title: STD24211
+  description: This is a specification of STD24211
+  version: 1.0.0
+
+servers:
+  - url: https://localhost:8000
+    description: Serveur
+
+paths:
+  /ping:
+    get:
+      summary: Return pong
+      description: Endpoint pour vérifier que l'API fonctionne
+      responses:
+        '200':
+          description: Reponse pong
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: pong
+
+  /cars:
+    get:
+      summary: Prend toutes les voitures
+      description: Return List Car
+      responses:
+        '200':
+          description: List recuperer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Car'
+
+    post:
+      summary: Cree une ou plusieurs voitures
+      description: Cree une liste de voitures et les save
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Car'
+      responses:
+        '201':
+          description: Voitures creer avec succes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateResponse'
+
+  /cars/{car_id}:
+    get:
+      summary: Recupere une voiture par son identifiant
+      description: Return les détails d'une voiture specifique
+      parameters:
+        - name: car_id
+          in: path
+          required: true
+          description: Identifiant unique de la voiture
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Voiture trouvee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        '404':
+          description: Voiture non trouvee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /cars/{car_id}/characteristics:
+    put:
+      summary: Met à jour les caracteristiques d'une voiture
+      description: Modifie les caracteristiques techniques d'une voiture existante
+      parameters:
+        - name: car_id
+          in: path
+          required: true
+          description: Identifiant unique de la voiture
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CharacteristicUpdate'
+      responses:
+        '200':
+          description: Caracteristiques mises à jour avec succes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        '404':
+          description: Voiture non trouvee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    CharacteristicBase:
+      type: object
+      properties:
+        max_speed:
+          type: number
+          format: float
+          example: 180.5
+        max_fuel_capacity:
+          type: number
+          format: float
+          example: 50.0
+    Characteristic:
+      allOf:
+        - $ref: '#/components/schemas/CharacteristicBase'
+        - type: object
+          required:
+            - max_speed
+            - max_fuel_capacity
+            -
+    CharacteristicUpdate:
+      allOf:
+        - $ref: '#/components/schemas/CharacteristicBase'
+        - type: object
+          properties:
+            max_speed:
+              nullable: true
+            max_fuel_capacity:
+              nullable: true
+    CarBase:
+      type: object
+      properties:
+        identifier:
+          type: string
+          example: "voiture1"
+        brand:
+          type: string
+          example: "Cooper"
+        model:
+          type: string
+          example: "Mini"
+    Car:
+      allOf:
+        - $ref: '#/components/schemas/CarBase'
+        - type: object
+          required:
+            - identifier
+            - brand
+            - model
+            - characteristics
+          properties:
+            characteristics:
+              $ref: '#/components/schemas/Characteristic'
+    CreateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "2 voitures ajoutes"
+        total:
+          type: integer
+          example: 2
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Voiture non trouvee"
+        message:
+          type: string
+          example: "La voiture avec l'identifiant 'voiture999' n'existe pas"
