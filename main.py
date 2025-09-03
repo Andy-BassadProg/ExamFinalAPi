@@ -4,6 +4,10 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
+@app.get("/ping")
+def ping():
+    return "pong"
+    
 class Characteristic(BaseModel):
     max_speed: float
     max_fuel_capacity: float
@@ -14,10 +18,6 @@ class Car(BaseModel):
     model: str
     characteristics: Characteristic
 cars = []
-
-@app.get("/ping")
-def ping():
-    return "pong"
 
 @app.post("/cars", status_code=201)
 def create_cars(new_cars: list[Car]):
