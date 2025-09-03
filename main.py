@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from h11 import Response
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -33,3 +34,14 @@ def create_cars(new_cars: list[Car]):
 @app.get("/cars")
 def get_cars():
     return cars
+
+@app.get("/cars/{car_id}")
+def get_car_id(car_id: str, response: Response):
+    for car in cars:
+        if car.identifier == car_id:
+            return car
+    response.status_code = 404
+    return {
+        "error": "Voiture inexistante",
+        "message": f"La voiture avec l'identifiant '{car_id}' n'existe pas"
+    }
